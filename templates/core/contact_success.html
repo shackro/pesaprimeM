@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Message Sent - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-emerald-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full text-center">
+        <!-- Success Icon -->
+        <div class="mx-auto w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        
+        <!-- Success Message -->
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Message Sent Successfully!
+        </h2>
+        
+        <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+            Thank you for contacting PesaPrime Capital. We have received your message and our team will get back to you within 24 hours.
+        </p>
+        
+        <!-- Next Steps -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                What Happens Next?
+            </h3>
+            <ul class="text-left text-gray-600 dark:text-gray-300 space-y-3">
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    You'll receive a confirmation email within 5 minutes
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    Our support team will review your inquiry
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-5 h-5 text-emerald-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    We'll respond via email or phone within 24 hours
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'core:home' %}" 
+               class="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg transition duration-200">
+                Return to Dashboard
+            </a>
+            <a href="{% url 'core:contact' %}" 
+               class="px-6 py-3 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-semibold rounded-lg transition duration-200">
+                Send Another Message
+            </a>
+        </div>
+        
+        <!-- Support Information -->
+        <div class="mt-8 text-sm text-gray-500 dark:text-gray-400">
+            <p>Need immediate assistance?</p>
+            <p class="mt-1">
+                Call our support line: <span class="font-semibold">+254 700 000000</span>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

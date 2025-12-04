@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Withdraw - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 dark:from-gray-900 dark:to-red-900 p-4">
+    <div class="max-w-md mx-auto">
+
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'core:home' %}"
+               class="p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6z"/>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Withdraw Funds</h1>
+        </div>
+
+        <!-- Current Balance Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <div class="text-center">
+                <p class="text-gray-600 dark:text-gray-300 mb-2">Available Balance</p>
+
+                <p class="text-3xl font-bold text-green-600">
+                    {{ currency_symbol }}{{ wallet_balance|floatformat:2 }}
+                </p>
+
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Maximum withdrawal:
+                    {{ currency_symbol }}{{ wallet_balance|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Withdrawal Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                Withdrawal Amount
+            </h2>
+
+            <!-- Withdrawal Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <!-- Quick Select -->
+                <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-3">Quick Select</p>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        {% for amount in quick_amounts %}
+                            {% if amount <= wallet_balance %}
+                                <button type="button"
+                                        class="quick-amount py-2 px-3 bg-gray-100 dark:bg-gray-600 hover:bg-red-500 hover:text-white rounded-lg transition">
+                                    {{ currency_symbol }}{{ amount|floatformat:2 }}
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Withdrawal Details -->
+                <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-2">Withdrawal Details</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Amount:</span>
+                            <span class="amount-display font-semibold">{{ currency_symbol }}0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600 dark:text-gray-300">Fee:</span>
+                            <span class="text-green-600">Free</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2">
+                            <span class="text-gray-800 dark:text-white font-semibold">Total to receive:</span>
+                            <span class="amount-display font-semibold">{{ currency_symbol }}0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white rounded-xl font-semibold text-lg">
+                    Withdraw Now
+                </button>
+
+                <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    Withdrawing from: {{ user.phone_number }}
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Withdrawals -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Withdrawals</h3>
+
+            <div class="space-y-3">
+                {% for w in withdrawals %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-white">
+                            Withdrawal via {{ w.payment_method }}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ w.created_at|date:"M d, Y" }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-red-600 font-semibold">
+                            - {{ currency_symbol }}{{ w.amount|floatformat:2 }}
+                        </p>
+                        <p class="text-xs text-gray-500 capitalize">{{ w.status }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <p>No recent withdrawals</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div class="flex items-start">
+                <svg width="20" height="20" fill="currentColor" class="text-blue-600 mt-0.5 mr-2">
+                    <path d="M8 16A8 8 0..."></path>
+                </svg>
+                <div>
+                    <p class="text-sm font-semibold text-blue-800 dark:text-blue-200">Processing Time</p>
+                    <p class="text-xs text-blue-700 dark:text-blue-300">
+                        Withdrawals are processed within 2–4 hours business days.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Quick amount selection
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', function () {
+            const amount = this.textContent.replace(/[^\d.]/g, '');
+            document.getElementById('id_amount').value = amount;
+            updateWithdrawalDetails();
+        });
+    });
+
+    // Update details dynamically
+    document.getElementById('id_amount')?.addEventListener('input', updateWithdrawalDetails);
+
+    function updateWithdrawalDetails() {
+        const amount = document.getElementById('id_amount')?.value || '0';
+        document.querySelectorAll('.amount-display').forEach(el => {
+            el.textContent = "{{ currency_symbol }}" + parseFloat(amount).toFixed(2);
+        });
+    }
+
+    updateWithdrawalDetails();
+</script>
+{% endblock %}

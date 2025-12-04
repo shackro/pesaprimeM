@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mx-4 flex-col items-center justify-center space-y-4 mt-4">
+
+    <!-- Investment Card -->
+    <div class="flex-col py-4">
+        <div class="w-full py-6 bg-gradient-to-r from-teal-600 to-emerald-700 rounded-xl shadow-lg relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-0 left-0 w-20 h-20 bg-white rounded-full -translate-x-10 -translate-y-10"></div>
+                <div class="absolute bottom-0 right-0 w-32 h-32 bg-yellow-300 rounded-full translate-x-16 translate-y-16"></div>
+            </div>
+
+            <div class="relative z-10 text-center mt-6">
+                <div class="flex items-center justify-center space-x-4 mb-2">
+
+                    <!-- Profit -->
+                    <div class="flex items-center bg-green-500 bg-opacity-20 px-3 py-1 rounded-full">
+                        <svg class="w-4 h-4 text-green-300 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/>
+                        </svg>
+                        <span class="text-green-300 text-sm font-semibold">
+                            +{{ investment_stats.total_profit }}
+                        </span>
+                    </div>
+
+                    <!-- User Phone -->
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-white tracking-wider">
+                            {{ user.phone_number }}
+                        </p>
+                        <p class="text-teal-200 text-sm mt-1">
+                            {{ investment_stats.active_investments }} Active Investments
+                        </p>
+                    </div>
+
+                    <!-- Loss -->
+                    <div class="flex items-center bg-red-500 bg-opacity-20 px-3 py-1 rounded-full">
+                        <svg class="w-4 h-4 text-red-300 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"/>
+                        </svg>
+                        <span class="text-red-300 text-sm font-semibold">
+                            {{ investment_stats.total_loss }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Net P/L -->
+                <div class="mb-3">
+                    <span class="text-lg font-bold {% if investment_stats.net_pl >= 0 %}text-green-300{% else %}text-red-300{% endif %}">
+                        Net P/L:
+                        {% if investment_stats.net_pl > 0 %}+{% endif %}
+                        {{ investment_stats.net_pl }}
+                        <span class="text-sm ml-2">({{ investment_stats.net_pl_percentage }}%)</span>
+                    </span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="w-64 mx-auto bg-teal-800 rounded-full h-2 mt-2">
+                    <div class="h-2 rounded-full transition-all duration-500
+                        {% if investment_stats.net_pl >= 0 %}
+                            bg-gradient-to-r from-green-400 to-yellow-400
+                        {% else %}
+                            bg-gradient-to-r from-red-400 to-orange-400
+                        {% endif %}"
+                        style="width: {{ investment_stats.progress_width }}%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet + Equity -->
+    <div class="flex justify-around items-center w-full py-3 border border-indigo-400 rounded-xl"> 
+        <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-900">
+            Wallet balance: <br>
+            <span class="text-xl font-bold">{{ currency_symbol }} {{ wallet.balance|default:0|floatformat:2 }}</span>
+        </div>
+        <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600">
+            Equity:<br>
+            <span class="text-xl font-bold">{{ currency_symbol }} {{ wallet.equity|default:0|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-around items-center w-full py-3"> 
+        <a href="{% url 'investments:deposit' %}" class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            <p class="mt-2 text-center">Deposit</p>
+        </a>
+
+        <a href="{% url 'investments:withdraw' %}" class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+            </svg>
+            <p class="mt-2 text-center">Withdraw</p>
+        </a>
+
+        <a href="{% url 'investments:bonus' %}" class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-2 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935M8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+            <p class="mt-2 text-center">Bonus</p>
+        </a>
+    </div>
+
+    <!-- Records -->
+    <div class="flex flex-col justify-around items-center w-full py-3 bg-emerald-700 rounded-xl px-3">
+
+        <div class="flex justify-around items-center w-full mb-4 bg-teal-700 rounded-xl"> 
+            <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-900">
+                Deposit Records: {{ deposit_count }}
+            </div>
+            <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-900">
+                Withdrawal Records: {{ withdraw_count }}
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="w-full bg-white dark:bg-gray-800 rounded-lg p-4">
+            <h3 class="text-xl font-bold mb-4">Recent Transactions</h3>
+
+            {% for tx in transactions %}
+            <div class="mb-3 pb-2 border-b dark:border-gray-700">
+
+                <!-- Title Row -->
+                <div class="flex items-center justify-between">
+                    <p class="font-semibold">
+                        {{ tx.transaction_type|title }}
+                    </p>
+
+                    <span class="text-sm 
+                        {% if tx.transaction_type == 'deposit' %}text-green-500
+                        {% elif tx.transaction_type == 'withdraw' %}text-red-500
+                        {% else %}text-gray-400{% endif %}
+                    ">
+                        {% if tx.transaction_type == 'deposit' %}+{% endif %}
+                        {{ currency_symbol }} {{ tx.amount }}
+                    </span>
+                </div>
+
+                <!-- Method -->
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ tx.method|default:"Transaction" }}
+                </p>
+
+                <!-- Date -->
+                <p class="text-xs text-gray-400 mt-2">
+                    {{ tx.created_at|date:"M d, Y" }}
+                </p>
+            </div>
+            {% empty %}
+                <p>No transactions yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

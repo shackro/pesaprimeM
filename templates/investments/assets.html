@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load form_filters %}
+
+
+{% block title %}Assets - PesaPrime{% endblock %}
+
+{% block extra_css %}
+<style>
+.asset-card { transition: all 0.3s ease; }
+.asset-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10 -5px rgba(0,0,0,0.04); }
+.price-tag { font-feature-settings:"tnum"; font-variant-numeric:tabular-nums; }
+.trend-up { animation:pulse-green 2s infinite; }
+.trend-down { animation:pulse-red 2s infinite; }
+@keyframes pulse-green { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+@keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.5;} }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-2 mb-24 flex flex-col items-center justify-center overflow-x-hidden  lg:mt-8 " >
+
+    <!-- Wallet Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+        <div class="bg-gradient-to-br from-orange-500 to-amber-900 p-4 rounded-xl text-center text-white">
+            <h4 class="font-semibold">Cash Balance</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ wallet_balance|floatformat:2 }}</p>
+        </div>
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-center text-white">
+            <h4 class="font-semibold">Total Equity</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ wallet_equity|floatformat:2 }}</p>
+        </div>
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-center text-white">
+            <h4 class="font-semibold">Total Invested</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ total_invested|floatformat:2 }}</p>
+        </div>
+        <div class="bg-gradient-to-br p-4 rounded-xl text-center text-white 
+            {% if total_profit_loss >= 0 %}from-green-500 to-emerald-600{% else %}from-red-500 to-rose-600{% endif %}">
+            <h4 class="font-semibold">PNL</h4>
+            <p class="text-xl font-bold">
+                {% if total_profit_loss >= 0 %}+{% endif %}{{ currency_symbol }}{{ total_profit_loss|floatformat:2 }}
+            </p>
+            {% if total_invested > 0 %}
+            <div class="text-sm">({% if total_profit_loss >= 0 %}+{% endif %}{{ total_profit_loss|divisibleby:total_invested|floatformat:2 }}%)</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top Gainers / Losers -->
+    <div class="grid md:grid-cols-2 gap-4 mb-6 w-full">
+        <!-- Top Gainers -->
+        <div class="bg-gradient-to-br from-green-700 to-emerald-900 rounded-xl p-4 text-white">
+            <h3 class="text-xl font-bold mb-4 text-center">Top Gainers</h3>
+            <div class="space-y-2">
+                {% for asset in top_gainers %}
+                <div class="flex flex-col p-2 bg-green-800 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">{{ asset.name }}</span>
+                        <span class="font-semibold">{{ currency_symbol }}{{ asset.current_price|floatformat:2 }}</span>
+                        <span class="text-green-300 font-semibold">+{{ asset.change_percentage|floatformat:2 }}%</span>
+                    </div>
+                    <!-- Quick Invest Form -->
+                    {% comment %} <form method="post" action="{% url 'investments:invest_asset' asset.id %}" class="flex space-x-2">
+                        {% csrf_token %}
+                        <input type="number" name="amount" min="{{ asset.min_investment|floatformat:2 }}" 
+                            placeholder="{{ currency_symbol }}{{ asset.min_investment|floatformat:2 }}" 
+                            class="w-2/3 rounded p-1 text-sm text-white" required>
+                        <button type="submit" class="w-1/3 bg-white text-green-700 rounded font-semibold text-sm hover:bg-green-100">
+                            Invest
+                        </button>
+                    </form> {% endcomment %}
+                </div>
+                {% empty %}
+                <p class="text-center">No gainers available.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Losers -->
+        <div class="bg-gradient-to-br from-red-700 to-pink-900 rounded-xl p-4 text-white">
+            <h3 class="text-xl font-bold mb-4 text-center">Top Losers</h3>
+            <div class="space-y-2">
+                {% for asset in top_losers %}
+                <div class="flex flex-col p-2 bg-red-800 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">{{ asset.name }}</span>
+                        <span class="font-semibold">{{ currency_symbol }}{{ asset.current_price|floatformat:2 }}</span>
+                        <span class="text-red-300 font-semibold">{{ asset.change_percentage|floatformat:2 }}%</span>
+                    </div>
+                    <!-- Quick Invest Form -->
+                    {% comment %} <form method="post" action="{% url 'investments:invest_asset' asset.id %}" class="flex space-x-2">
+                        {% csrf_token %}
+                        <input type="number" name="amount" min="{{ asset.min_investment|floatformat:2 }}" 
+                            placeholder="{{ currency_symbol }}{{ asset.min_investment|floatformat:2 }}" 
+                            class="w-2/3 rounded p-1 text-sm text-white" required>
+                        <button type="submit" class="w-1/3 bg-white text-red-700 rounded font-semibold text-sm hover:bg-red-100">
+                            Invest
+                        </button>
+                    </form> {% endcomment %}
+                </div>
+                {% empty %}
+                <p class="text-center">No losers available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+        <!-- Quick Investment Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6 w-full">
+        {% for asset in market_assets %}
+            {% include 'investments/invest_widget.html' with asset=asset form=investment_form %}
+        {% endfor %}
+    </div>
+
+
+
+    <!-- Educational / Info Section -->
+    <div class="mt-6 w-full bg-gradient-to-br from-indigo-900 to-purple-900 rounded-xl p-4 text-white ">
+        <h3 class="text-xl font-bold mb-4 text-center">Educational Tips & Insights</h3>
+        <div class="space-y-3">
+            {% for tip in educational_tips %}
+            <div class="bg-indigo-800 p-3 rounded-lg hover:bg-indigo-700 transition">
+                <h4 class="font-semibold">{{ tip.title }}</h4>
+                <p class="text-gray-200 text-sm">{{ tip.content }}</p>
+            </div>
+            {% empty %}
+            <p class="text-center text-gray-300">No educational content available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!-- investments/templates/investments/invest_widget.html -->
+{% load tailwind_field %}
+
+<div class="asset-card bg-green-950 rounded-xl shadow p-4 flex flex-col justify-between hover:shadow-xl transition">
+    <div class="flex justify-between items-center mb-2">
+        <h4 class="font-semibold text-lg">{{ asset.name }} ({{ asset.symbol }})</h4>
+        <span class="text-sm text-white">{{ currency_symbol }}{{ asset.display_price|floatformat:2 }}</span>
+    </div>
+    <div class="mb-2 text-sm text-gray-600 space-y-1">
+        <p>Min Invest: {{ currency_symbol }}{{ asset.display_min_investment|floatformat:2 }}</p>
+        <p>Hourly Income: {{ currency_symbol }}{{ asset.display_hourly_income|floatformat:2 }}</p>
+    </div>
+
+    <form method="post" action="{% url 'investments:invest_asset' asset.id %}" class="mt-2">
+        {% csrf_token %}
+        <div class="flex flex-col space-y-2">
+            <label class="text-sm font-medium">Amount</label>
+            <input type="number" name="amount" min="{{ asset.display_min_investment }}" step="1">
+
+            <label class="text-sm font-medium">Duration (hrs)</label>
+            <select name="duration_hours" class="w-full rounded p-1 text-sm">
+                {% for hour in allowed_hours %}
+                    <option value="{{ hour }}" {% if hour == asset.duration_hours_default %}selected{% endif %}>
+                        {{ hour }} hours
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="mt-2 bg-blue-800 hover:bg-blue-700 text-white py-1 rounded font-semibold w-full">
+                Invest
+            </button>
+        </div>
+    </form>
+</div>
+

@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">About PesaPrime Capital</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300">
+                Empowering smart investments since 2023
+            </p>
+        </div>
+
+        <!-- Mission & Vision -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Our Mission</h3>
+                <p class="text-gray-700 dark:text-gray-300">
+                    To democratize investment opportunities by providing accessible, secure, and profitable investment 
+                    solutions to everyone, regardless of their financial background or experience level.
+                </p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Our Vision</h3>
+                <p class="text-gray-700 dark:text-gray-300">
+                    To become Africa's leading investment platform, transforming how people grow their wealth through 
+                    innovative technology, expert market analysis, and unparalleled customer service.
+                </p>
+            </div>
+        </div>
+
+        <!-- Story -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Our Story</h2>
+            <div class="prose dark:prose-invert max-w-none">
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                    Founded in 2023 by a team of financial experts and technology innovators, PesaPrime Capital 
+                    was born from a simple observation: traditional investment platforms were either too complex 
+                    for beginners or too limited for serious investors.
+                </p>
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                    We set out to create a platform that bridges this gap – combining professional-grade investment 
+                    tools with an intuitive interface that anyone can use. Our team brings together decades of 
+                    experience in finance, technology, and customer service to deliver an exceptional investment 
+                    experience.
+                </p>
+                <p class="text-gray-700 dark:text-gray-300">
+                    Today, we proudly serve thousands of investors across Kenya and beyond, helping them achieve 
+                    their financial goals through smart, secure investments.
+                </p>
+            </div>
+        </div>
+
+        <!-- Values -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">Our Core Values</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white">
+                    <h3 class="text-lg font-bold mb-3">Transparency</h3>
+                    <p class="text-emerald-100">
+                        We believe in complete transparency. No hidden fees, no complicated terms – just clear, 
+                        honest investing.
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
+                    <h3 class="text-lg font-bold mb-3">Security</h3>
+                    <p class="text-blue-100">
+                        Your security is our priority. We employ bank-level encryption and follow strict security 
+                        protocols to protect your investments.
+                    </p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl p-6 text-white">
+                    <h3 class="text-lg font-bold mb-3">Innovation</h3>
+                    <p class="text-yellow-100">
+                        We continuously innovate to provide the best investment opportunities and user experience 
+                        for our clients.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">Meet Our Leadership</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full mx-auto mb-4"></div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">John Mwangi</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">CEO & Founder</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                        15+ years in financial services
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full mx-auto mb-4"></div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">Sarah Otieno</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Chief Investment Officer</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                        Former hedge fund manager
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-24 h-24 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full mx-auto mb-4"></div>
+                    <h4 class="font-bold text-gray-900 dark:text-white">David Kimani</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">CTO</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">
+                        Fintech innovation expert
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-12 text-center">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ready to Start Your Investment Journey?</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
+                Join thousands of satisfied investors who trust PesaPrime with their financial growth.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'accounts:register' %}" 
+                   class="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg transition duration-200">
+                    Create Free Account
+                </a>
+                <a href="{% url 'core:contact' %}" 
+                   class="px-8 py-3 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 font-semibold rounded-lg transition duration-200">
+                    Contact Us
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,254 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invest - PesaPrime{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Minimal styling — keep consistency with your Tailwind styling in other templates */
+.invest-asset { background: var(--card-bg, #0f172a); border-radius: 12px; padding: 1rem; color: #fff; }
+.asset-header { display:flex; justify-content:space-between; align-items:center; gap: .5rem; }
+.quick-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.5rem; }
+.input-inline { display:flex; gap:.5rem; align-items:center; }
+.amount-badge { background: rgba(255,255,255,0.06); padding:.25rem .5rem; border-radius:8px; }
+.small-muted { color: rgba(255,255,255,0.6); font-size:.9rem; }
+.error { color: #ff6b6b; font-weight:600; }
+.success { color: #7dd3fc; font-weight:600; }
+.chart-container { width:100%; height:220px; margin-top:.5rem; background: #0b1220; border-radius:8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto p-4 space-y-6">
+
+  <header class="mb-4">
+    <h1 class="text-2xl font-bold">Make an Investment</h1>
+    <p class="small-muted">Choose an asset, enter an amount (minimum depends on the asset) and submit. Amounts shown use <strong>{{ currency_code }}</strong> ({{ currency_symbol }}).</p>
+  </header>
+
+  <!-- Wallet summary -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div class="p-4 rounded-lg bg-gradient-to-r from-orange-500 to-amber-700 text-white">
+      <div class="text-sm">Cash Balance</div>
+      <div class="text-xl font-bold">{{ currency_symbol }}{{ wallet_balance_display|default:"0.00" }}</div>
+    </div>
+    <div class="p-4 rounded-lg bg-gradient-to-r from-green-500 to-emerald-700 text-white">
+      <div class="text-sm">Quick Invest</div>
+      <div class="text-lg">
+        {% for q in quick_amounts_display %}
+          <span class="amount-badge">{{ currency_symbol }}{{ q }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="p-4 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-700 text-white">
+      <div class="text-sm">Currency</div>
+      <div class="text-xl font-bold">{{ currency_code }} ({{ currency_symbol }})</div>
+    </div>
+  </section>
+
+  <!-- Assets list -->
+  <section class="space-y-4 text-black">
+    {% for asset in assets %}
+    <article class="invest-asset" id="asset-{{ asset.id }}"
+             data-asset-id="{{ asset.id }}"
+             data-base-price="{{ asset.base_price }}"
+             data-base-min="{{ asset.base_min_investment }}"
+             data-base-hourly="{{ asset.base_hourly_income }}"
+             data-price-display="{{ asset.price_display }}"
+             data-min-display="{{ asset.min_investment_display }}"
+             data-hourly-display="{{ asset.hourly_income_display }}"
+             data-change="{{ asset.change_percentage }}"
+             data-rate="{{ currency_rate }}">
+      <div class="asset-header">
+        <div>
+          <h2 class="text-lg font-semibold">{{ asset.name }} <span class="small-muted">({{ asset.symbol }})</span></h2>
+          <div class="small-muted">Type: {{ asset.asset_type }} — Change: {% if asset.change_percentage >= 0 %}<span class="text-green-300">+{{ asset.change_percentage }}%</span>{% else %}<span class="text-red-400">{{ asset.change_percentage }}%</span>{% endif %}</div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm small-muted">Price</div>
+          <div class="text-xl font-bold">{{ currency_symbol }}{{ asset.price_display }}</div>
+          <div class="text-xs small-muted">Min: {{ currency_symbol }}{{ asset.min_investment_display }}</div>
+          <div class="text-xs small-muted">Hourly: {{ currency_symbol }}{{ asset.hourly_income_display }}</div>
+        </div>
+      </div>
+
+      <!-- chart -->
+      <div id="chart-{{ asset.id }}" class="chart-container" data-chart-url="{{ asset.chart_url|default:'' }}"></div>
+
+      <!-- Invest form (one per asset) -->
+      <form method="post" action="{% url 'investments:invest' asset.id %}" class="mt-3 invest-form" data-asset="{{ asset.id }}">
+        {% csrf_token %}
+        <input type="hidden" name="asset_id" value="{{ asset.id }}">
+        <input type="hidden" name="currency_code" value="{{ currency_code }}">
+        <input type="hidden" name="currency_rate" value="{{ currency_rate }}">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
+          <div>
+            <label class="text-sm small-muted">Amount ({{ currency_code }})</label>
+            <div class="input-inline">
+              <span class="small-muted">{{ currency_symbol }}</span>
+              <input name="amount" type="number" step="0.01" min="0" class="w-full p-2 rounded bg-black/20" value="{{ asset.min_investment_display }}">
+            </div>
+            <div class="text-xs small-muted mt-1">Minimum: <strong>{{ currency_symbol }}<span class="min-display">{{ asset.min_investment_display }}</span></strong></div>
+          </div>
+
+          <div>
+            <label class="text-sm small-muted">Quick Select</label>
+            <div class="quick-grid mt-1">
+            {% for q_disp, q_base in quick_amounts %}
+                <button type="button"
+                        class="quick-btn p-2 rounded bg-gray-800 hover:bg-gray-700 text-sm"
+                        data-amount-display="{{ q_disp }}"
+                        data-amount-base="{{ q_base }}">
+                {{ currency_symbol }}{{ q_disp }}
+                </button>
+            {% endfor %}
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm small-muted">Duration (hours)</label>
+            <select name="duration" class="w-full p-2 rounded bg-black/20">
+              <option value="1">1</option>
+              <option value="4" selected>4</option>
+              <option value="6">6</option>
+              <option value="12">12</option>
+            </select>
+
+            <div class="mt-2">
+              <button type="submit" class="w-full py-2 rounded bg-emerald-600">Invest</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <div class="small-muted">Estimated hourly: <strong>{{ currency_symbol }}<span class="hourly-display">{{ asset.hourly_income_display }}</span></strong></div>
+          <div class="error mt-1" style="display:none;"></div>
+          <div class="success mt-1" style="display:none;"></div>
+        </div>
+      </form>
+    </article>
+    {% endfor %}
+  </section>
+
+</div>
+
+<!-- lightweight-charts script (served from static). Ensure you have the file in static/js/ ) -->
+<script src="{% static 'js/lightweight-charts.standalone.production.js' %}"></script>
+
+<script>
+(function(){
+  // helper to parse numbers safely
+  function toNum(v){ return (v===null||v===undefined||v==='') ? 0 : parseFloat(v); }
+
+  // Currency conversion helpers using rate passed from context:
+  const globalRate = parseFloat('{{ currency_rate }}') || 1; // base→display multiplier
+  // display = base * rate
+  // to get base from display: base = display / rate
+
+  // Initialize charts (simple placeholder candlestick or line)
+  document.querySelectorAll('[id^="chart-"]').forEach(div => {
+    // If lightweight charts library exists, initialize; otherwise leave placeholder
+    if (window.LightweightCharts && typeof window.LightweightCharts.createChart === 'function') {
+      const chart = LightweightCharts.createChart(div, { width: div.offsetWidth, height: 220, layout: {background: {color:'#0b1220'}} });
+      const lineSeries = chart.addLineSeries({ color: '#26a69a' });
+      // create a tiny simulated data set from base-price (the backend should provide real data or chart_url)
+      const parent = div.closest('[data-base-price]');
+      const basePrice = toNum(parent?.dataset?.basePrice);
+      const rate = toNum(parent?.dataset?.rate) || globalRate;
+      const displayPrice = basePrice * rate;
+      const now = Date.now()/1000|0;
+      // build simple moving points
+      const points = [];
+      for(let i=30;i>=0;i--){
+        const t = (now - i*15); // 15 sec steps label (client only)
+        const noise = (Math.sin(i/3)+Math.random()/5);
+        points.push({ time: t, value: Math.max(0.0001, (displayPrice * (1 + noise*0.002))) });
+      }
+      lineSeries.setData(points);
+      window.addEventListener('resize', ()=> chart.applyOptions({ width: div.offsetWidth }));
+    } else {
+      // fallback: show simple text
+      div.innerHTML = '<div style="padding:1rem;color:#9ca3af">Chart unavailable — include lightweight-charts JS</div>';
+    }
+  });
+
+  // Quick buttons functionality
+  document.querySelectorAll('.quick-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const parentForm = btn.closest('form');
+      const input = parentForm.querySelector('input[name="amount"]');
+      input.value = btn.dataset.amountDisplay;
+      // update estimates, errors clear
+      validateAndShow(parentForm);
+    });
+  });
+
+  // Per-form submit interception: validate against base min before posting
+  document.querySelectorAll('.invest-form').forEach(form=>{
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const assetRoot = form.closest('[data-asset-id]');
+      const rate = parseFloat(assetRoot.dataset.rate) || globalRate; // base→display
+      const enteredDisplay = toNum(form.querySelector('input[name="amount"]').value);
+      const enteredBase = (rate>0) ? (enteredDisplay / rate) : enteredDisplay; // convert back to KES
+      const baseMin = toNum(assetRoot.dataset.baseMin);
+
+      const errorEl = form.querySelector('.error');
+      const successEl = form.querySelector('.success');
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      if (enteredBase < baseMin) {
+        errorEl.textContent = `Minimum for this asset is ${Math.round(baseMin)} KES (you entered ${Math.round(enteredBase)} KES).`;
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      // amount OK — optionally show confirmation then submit normally
+      // set hidden field so server can know the entered_display and currency_rate (server will convert using same rate)
+      let hiddenBase = form.querySelector('input[name="amount_base_hidden"]');
+      if(!hiddenBase){
+        hiddenBase = document.createElement('input');
+        hiddenBase.type = 'hidden';
+        hiddenBase.name = 'amount_base_hidden';
+        form.appendChild(hiddenBase);
+      }
+      hiddenBase.value = enteredBase;
+
+      // Optionally you can perform AJAX; for now submit normally to backend which must convert using currency_rate or use amount_base_hidden
+      form.submit();
+    });
+
+    // also update live validation on input
+    const amtInput = form.querySelector('input[name="amount"]');
+    amtInput.addEventListener('input', ()=> validateAndShow(form));
+  });
+
+  function validateAndShow(form){
+    const assetRoot = form.closest('[data-asset-id]');
+    const rate = parseFloat(assetRoot.dataset.rate) || globalRate;
+    const enteredDisplay = toNum(form.querySelector('input[name="amount"]').value);
+    const enteredBase = (rate>0) ? (enteredDisplay / rate) : enteredDisplay;
+    const baseMin = toNum(assetRoot.dataset.baseMin);
+
+    const errorEl = form.querySelector('.error');
+    const successEl = form.querySelector('.success');
+    errorEl.style.display = 'none';
+    successEl.style.display = 'none';
+
+    if (enteredBase < baseMin) {
+      errorEl.textContent = `Minimum is ${Math.round(baseMin)} KES (you entered ~${Math.round(enteredBase)} KES)`;
+      errorEl.style.display = 'block';
+      return false;
+    } else {
+      successEl.textContent = `OK — approx ${Math.round(enteredBase)} KES.`;
+      successEl.style.display = 'block';
+      return true;
+    }
+  }
+
+})();
+</script>
+{% endblock %}
