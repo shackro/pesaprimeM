@@ -7,8 +7,9 @@ class SchedulerConfig(AppConfig):
     name = 'scheduler'
 
     def ready(self):
-        from .tasks import update_all_assets
-        scheduler = BackgroundScheduler()
-        # Schedule job every 4 hours
-        scheduler.add_job(update_all_assets, 'interval', hours=1, id='update_assets_job', replace_existing=True)
-        scheduler.start()
+        pass
+        # from .tasks import update_all_assets
+        # scheduler = BackgroundScheduler()
+        # # Schedule job every 4 hours
+        # scheduler.add_job(update_all_assets, 'interval', hours=1, id='update_assets_job', replace_existing=True)
+        # scheduler.start()
