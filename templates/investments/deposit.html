@@ -21,7 +21,7 @@
             <div class="text-center">
                 <p class="text-gray-600 dark:text-gray-300 mb-2">Current Balance</p>
                 <p class="text-3xl font-bold text-green-600">
-                    {{ currency_symbol }}{{ wallet.balance|default:0|floatformat:2 }}
+                    {{ currency_symbol }}{{ wallet_balance|default:0|floatformat:2 }}
                 </p>
             </div>
         </div>

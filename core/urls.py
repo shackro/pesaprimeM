@@ -13,5 +13,5 @@ urlpatterns = [
     path('privacy/', views.privacy_view, name='privacy'),
     path('faq/', views.faq_view, name='faq'),
     path('newsletter/', views.newsletter_view, name='newsletter'),
-    path('numbers/', views.number_carousel_view, name='numbers'),
+    path('number-carousel/', views.number_carousel_view, name='number_carousel'),
 ]

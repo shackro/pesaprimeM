@@ -6,6 +6,6 @@ class CoreConfig(AppConfig):
     name = 'core'
     
     
-    def ready(self):
-            from core.scheduler import start
-            start()
+    # def ready(self):
+    #         from core.scheduler import start
+    #         start()

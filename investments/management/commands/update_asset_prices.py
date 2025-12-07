@@ -1,12 +1,12 @@
 import requests
 from decimal import Decimal
 import random
-from datetime import datetime
 import yfinance as yf
 
-from django.core.management.base import BaseCommand
 from investments.models import Asset
 
+
+API_KEY ="L7SNLCSS0P2WAMDP"
 # ---------- HELPERS ----------
 
 def usd_to_kes():
@@ -17,23 +17,22 @@ def usd_to_kes():
             timeout=10
         ).json()
         if resp.get("result") != "success":
-            raise ValueError("API did not return success")
-        rate = resp["rates"]["KES"]
-        return Decimal(str(rate))
-    except Exception as e:
-        print("Error fetching USD/KES rate:", e)
-        return Decimal("160")  # fallback
-
-KES_RATE = usd_to_kes()
+            raise ValueError("API failed")
+        return Decimal(str(resp["rates"]["KES"]))
+    except Exception:
+        return Decimal("160")  # fallback safe rate
 
 def randomize_asset_fields(asset):
     """Randomize min investment, hourly income, and duration hours."""
     asset.min_investment = Decimal(random.randint(350, 700))
     asset.hourly_income = Decimal(random.randint(45, 172))
     asset.duration_hours = random.choice([3, 4, 6, 8, 10, 12, 16, 18, 22])
-    asset.save()
+    asset.save(update_fields=["min_investment", "hourly_income", "duration_hours"])
 
-# ---------- UPDATES ----------
+# Cache exchange rate at import
+KES_RATE = usd_to_kes()
+
+# ---------- UPDATE LOGIC ----------
 
 def update_crypto_prices(assets):
     symbol_to_id = {
@@ -53,57 +52,120 @@ def update_crypto_prices(assets):
     if not ids:
         return
 
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies=usd"
     try:
-        resp = requests.get(url, timeout=10).json()
+        resp = requests.get(
+            f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(ids)}&vs_currencies=usd",
+            timeout=10
+        ).json()
+
         for asset in assets:
             cg_id = symbol_to_id.get(asset.symbol)
-            if cg_id in resp:
-                usd_price = Decimal(resp[cg_id]["usd"])
-                kes_price = usd_price * KES_RATE
+            if cg_id not in resp:
+                continue
 
-                asset.change_percentage = (
-                    (kes_price - asset.current_price) / asset.current_price * 100
-                    if asset.current_price > 0 else 0
-                )
+            usd_price = Decimal(resp[cg_id]["usd"])
+            kes_price = usd_price * KES_RATE
 
-                asset.trend = (
-                    "up" if asset.change_percentage > 0 else
-                    "down" if asset.change_percentage < 0 else
-                    "neutral"
-                )
+            # Percentage change
+            old_price = asset.current_price
+            asset.change_percentage = (
+                (kes_price - old_price) / old_price * 100 if old_price > 0 else 0
+            )
 
-                asset.current_price = kes_price
-                randomize_asset_fields(asset)
+            # Trend
+            asset.trend = (
+                "up" if asset.change_percentage > 0 else
+                "down" if asset.change_percentage < 0 else
+                "neutral"
+            )
 
-                print(f"[Crypto] {asset.symbol} = {kes_price:.2f} KES | {asset.change_percentage:.2f}%")
+            # Update price
+            asset.current_price = kes_price
+            randomize_asset_fields(asset)
+
+            asset.save(update_fields=[
+                "current_price",
+                "change_percentage",
+                "trend",
+                "min_investment",
+                "hourly_income",
+                "duration_hours"
+            ])
+
     except Exception as e:
         print("Crypto update error:", e)
 
-def update_forex_prices(assets):
-    url = "https://api.exchangerate.host/latest?base=USD"
-    try:
-        resp = requests.get(url, timeout=10).json()
-        rates = resp.get("rates", {})
 
-        for asset in assets:
-            symbol = asset.symbol
-            if symbol == "XAUUSD":  # Gold
-                usd_price = Decimal("2000")
-            elif "/" in symbol:
-                base = symbol[:3]
-                quote = symbol[4:]
-                rate = rates.get(quote)
-                if rate is None:
-                    continue
-                usd_price = Decimal(rate)
-            else:
+def update_forex_prices(assets):
+    """
+    Update forex asset prices using Alpha Vantage.
+    Also computes KES value, change percentage, trend, and randomizes fields.
+    """
+    for asset in assets:
+        symbol = asset.symbol.upper()  # e.g., "EURUSD", "GBPUSD", "XAUUSD"
+
+        # Alpha Vantage uses separate symbols for currencies
+        from_currency = symbol[:3]
+        to_currency = symbol[3:]
+
+        if to_currency != "USD":
+            # For now, only support USD as quote currency
+            print(f"Skipping {symbol}, only USD quote supported")
+            continue
+
+        url = f"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={from_currency}&to_currency={to_currency}&apikey={API_KEY}"
+
+        try:
+            resp = requests.get(url, timeout=10).json()
+            rate_str = resp.get('Realtime Currency Exchange Rate', {}).get('5. Exchange Rate')
+
+            if not rate_str:
+                print(f"No rate returned for {symbol}")
                 continue
 
+            usd_price = Decimal(rate_str)
             kes_price = usd_price * KES_RATE
+
+            old_price = asset.current_price or Decimal("0")
+
+            # Compute change percentage
+            change_percentage = ((kes_price - old_price) / old_price * 100) if old_price > 0 else 0
+
+            # Determine trend
+            trend = "up" if change_percentage > 0 else "down" if change_percentage < 0 else "neutral"
+
+            # Update asset fields
+            asset.current_price = kes_price
+            asset.change_percentage = change_percentage
+            asset.trend = trend
+
+            # Randomize min_investment, hourly_income, duration_hours
+            asset.min_investment = Decimal(random.randint(350, 700))
+            asset.hourly_income = Decimal(random.randint(45, 172))
+            asset.duration_hours = random.choice([3, 4, 6, 8, 10, 12, 16, 18, 22])
+
+            asset.save(update_fields=[
+                "current_price", "change_percentage", "trend",
+                "min_investment", "hourly_income", "duration_hours"
+            ])
+
+        except Exception as e:
+            print(f"Forex update error for {symbol}: {e}")
+
+
+def update_stock_prices(assets):
+    for asset in assets:
+        try:
+            data = yf.Ticker(asset.symbol).history(period="1d")
+            if data.empty:
+                continue
+
+            usd_price = Decimal(data['Close'].iloc[-1])
+            kes_price = usd_price * KES_RATE
+
+            old_price = asset.current_price
             asset.change_percentage = (
-                (kes_price - asset.current_price) / asset.current_price * 100
-                if asset.current_price > 0 else 0
+                (kes_price - old_price) / old_price * 100 if old_price > 0 else 0
             )
 
             asset.trend = (
@@ -115,71 +177,24 @@ def update_forex_prices(assets):
             asset.current_price = kes_price
             randomize_asset_fields(asset)
 
-            print(f"[Forex] {asset.symbol} = {kes_price:.2f} KES")
+            asset.save(update_fields=[
+                "current_price", "change_percentage", "trend",
+                "min_investment", "hourly_income", "duration_hours"
+            ])
 
-    except Exception as e:
-        print("Forex update error:", e)
-
-def update_stock_prices(assets):
-    for asset in assets:
-        try:
-            data = yf.Ticker(asset.symbol).history(period="1d")
-            if not data.empty:
-                usd_price = Decimal(data['Close'].iloc[-1])
-                kes_price = usd_price * KES_RATE
-
-                asset.change_percentage = (
-                    (kes_price - asset.current_price) / asset.current_price * 100
-                    if asset.current_price > 0 else 0
-                )
-
-                asset.trend = (
-                    "up" if asset.change_percentage > 0 else
-                    "down" if asset.change_percentage < 0 else
-                    "neutral"
-                )
-
-                asset.current_price = kes_price
-                randomize_asset_fields(asset)
-
-                print(f"[Stock] {asset.symbol} = {kes_price:.2f} KES")
         except Exception as e:
             print(f"Stock error {asset.symbol}: {e}")
 
-# ---------- DJANGO COMMAND ----------
+# ---------- MAIN EXPORTED FUNCTION (Vercel will call this) ----------
 
-class Command(BaseCommand):
-    help = "Update asset prices (crypto, forex, stocks) with USD→KES conversion."
-
-    def handle(self, *args, **options):
-        self.stdout.write("\n========== Updating Prices ==========\n")
-
-        cryptos = Asset.objects.filter(asset_type="crypto", is_active=True)
-        forex = Asset.objects.filter(asset_type="forex", is_active=True)
-        stocks = Asset.objects.filter(asset_type="stock", is_active=True)
-
-        update_crypto_prices(cryptos)
-        update_forex_prices(forex)
-        update_stock_prices(stocks)
-
-        self.stdout.write("\n========== Update Complete ==========\n")
-
-# --------------------------------------------------
-# MAIN JOB
-# --------------------------------------------------
-def main():
-    print("\n========== Updating Prices ==========\n")
-
+def update_all_assets():
+    """Single function called by Vercel cron."""
     cryptos = Asset.objects.filter(asset_type="crypto", is_active=True)
-    forex = Asset.objects.filter(asset_type="forex", is_active=True)
-    stocks = Asset.objects.filter(asset_type="stock", is_active=True)
+    forex   = Asset.objects.filter(asset_type="forex", is_active=True)
+    stocks  = Asset.objects.filter(asset_type="stock",  is_active=True)
 
     update_crypto_prices(cryptos)
     update_forex_prices(forex)
     update_stock_prices(stocks)
 
-    print("\n========== Update Complete ==========\n")
-
-
-if __name__ == "__main__":
-    main()
+    return True

@@ -20,7 +20,7 @@
                             <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"/>
                         </svg>
                         <span class="text-green-300 text-sm font-semibold">
-                            +{{ investment_stats.total_profit }}
+                             +{{ investment_stats.total_profit }}
                         </span>
                     </div>
 
@@ -47,23 +47,23 @@
 
                 <!-- Net P/L -->
                 <div class="mb-3">
-                    <span class="text-lg font-bold {% if investment_stats.net_pl >= 0 %}text-green-300{% else %}text-red-300{% endif %}">
+                    <span id="net-pl"
+                        class="text-lg font-bold {% if investment_stats.net_pl >= 0 %}text-green-300{% else %}text-red-300{% endif %}">
                         Net P/L:
-                        {% if investment_stats.net_pl > 0 %}+{% endif %}
                         {{ investment_stats.net_pl }}
-                        <span class="text-sm ml-2">({{ investment_stats.net_pl_percentage }}%)</span>
+                        <span id="net-pl-percent" class="text-sm ml-2">
+                            ({{ investment_stats.net_pl_percentage }}%)
+                        </span>
                     </span>
                 </div>
 
                 <!-- Progress bar -->
                 <div class="w-64 mx-auto bg-teal-800 rounded-full h-2 mt-2">
                     <div class="h-2 rounded-full transition-all duration-500
-                        {% if investment_stats.net_pl >= 0 %}
-                            bg-gradient-to-r from-green-400 to-yellow-400
-                        {% else %}
-                            bg-gradient-to-r from-red-400 to-orange-400
-                        {% endif %}"
-                        style="width: {{ investment_stats.progress_width }}%;">
+                        <div id="pl-progress-bar"
+                            class="h-2 rounded-full transition-all duration-500"
+                            style="width: {{ investment_stats.progress_width }}%;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +74,7 @@
     <div class="flex justify-around items-center w-full py-3 border border-indigo-400 rounded-xl"> 
         <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-900">
             Wallet balance: <br>
-            <span class="text-xl font-bold">{{ currency_symbol }} {{ wallet.balance|default:0|floatformat:2 }}</span>
+            <span class="text-xl font-bold">{{ currency_symbol }} {{ cash_balance|default:0|floatformat:2 }}</span>
         </div>
         <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600">
             Equity:<br>
@@ -159,4 +159,48 @@
         </div>
     </div>
 </div>
+
+
 {% endblock %}
+
+{% comment %} <script>
+function updatePNLw() {
+    fetch("{% url 'investments:investment_stats_api' %}")
+        .then(response => response.json())
+        .then(data => {
+
+            document.getElementById("total-profit").innerText =
+                "+" + data.total_profit;
+
+            document.getElementById("total-loss").innerText =
+                data.total_loss;
+
+            const netPL = document.getElementById("net-pl");
+            const netPLPercent = document.getElementById("net-pl-percent");
+
+            netPL.innerHTML = `
+                Net P/L:
+                ${data.net_pl >= 0 ? '+' : ''}${data.net_pl}
+                <span class="text-sm ml-2">(${data.net_pl_percentage}%)</span>
+            `;
+
+            netPL.className =
+                "text-lg font-bold " +
+                (data.net_pl >= 0 ? "text-green-300" : "text-red-300");
+
+            const progressBar = document.getElementById("pl-progress-bar");
+            progressBar.style.width = data.progress_width + "%";
+            progressBar.className =
+                "h-2 rounded-full transition-all duration-500 " +
+                (data.net_pl >= 0
+                    ? "bg-gradient-to-r from-green-400 to-yellow-400"
+                    : "bg-gradient-to-r from-red-400 to-orange-400");
+        });
+}
+
+// Run immediately
+updatePNLw();
+
+// Auto refresh every 5 seconds
+setInterval(updatePNL, 5000);
+</script> {% endcomment %}

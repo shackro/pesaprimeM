@@ -20,8 +20,9 @@
 {% block content %}
 <div class="mx-2 mb-24 flex flex-col items-center justify-center overflow-x-hidden  lg:mt-8 " >
 
+
     <!-- Wallet Summary -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+    <div class="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-6 w-full">
         <div class="bg-gradient-to-br from-orange-500 to-amber-900 p-4 rounded-xl text-center text-white">
             <h4 class="font-semibold">Cash Balance</h4>
             <p class="text-xl font-bold">{{ currency_symbol }}{{ wallet_balance|floatformat:2 }}</p>
@@ -34,7 +35,7 @@
             <h4 class="font-semibold">Total Invested</h4>
             <p class="text-xl font-bold">{{ currency_symbol }}{{ total_invested|floatformat:2 }}</p>
         </div>
-        <div class="bg-gradient-to-br p-4 rounded-xl text-center text-white 
+        <div id="pnl" class="bg-gradient-to-br p-4 rounded-xl text-center text-white 
             {% if total_profit_loss >= 0 %}from-green-500 to-emerald-600{% else %}from-red-500 to-rose-600{% endif %}">
             <h4 class="font-semibold">PNL</h4>
             <p class="text-xl font-bold">
@@ -44,6 +45,10 @@
             <div class="text-sm">({% if total_profit_loss >= 0 %}+{% endif %}{{ total_profit_loss|divisibleby:total_invested|floatformat:2 }}%)</div>
             {% endif %}
         </div>
+    </div>
+
+    <div class="p-2 mb-2">
+    {% include 'partials/number_carousel.html'%}
     </div>
 
     <!-- Top Gainers / Losers -->
@@ -56,7 +61,7 @@
                 <div class="flex flex-col p-2 bg-green-800 rounded-lg">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-semibold">{{ asset.name }}</span>
-                        <span class="font-semibold">{{ currency_symbol }}{{ asset.current_price|floatformat:2 }}</span>
+                        <span class="font-semibold">{{ currency_symbol }}{{ asset.display_price|floatformat:2 }}</span>
                         <span class="text-green-300 font-semibold">+{{ asset.change_percentage|floatformat:2 }}%</span>
                     </div>
                     <!-- Quick Invest Form -->
@@ -84,7 +89,7 @@
                 <div class="flex flex-col p-2 bg-red-800 rounded-lg">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-semibold">{{ asset.name }}</span>
-                        <span class="font-semibold">{{ currency_symbol }}{{ asset.current_price|floatformat:2 }}</span>
+                        <span class="font-semibold">{{ currency_symbol }}{{ asset.display_price|floatformat:2 }}</span>
                         <span class="text-red-300 font-semibold">{{ asset.change_percentage|floatformat:2 }}%</span>
                     </div>
                     <!-- Quick Invest Form -->
@@ -112,7 +117,6 @@
             {% include 'investments/invest_widget.html' with asset=asset form=investment_form %}
         {% endfor %}
     </div>
-
 
 
     <!-- Educational / Info Section -->

@@ -1,0 +1,22 @@
+{
+  "version": 3,
+  "builds": [
+    {
+      "src": "manage.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/update-prices/?",
+      "dest": "manage.py"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/update-prices/",
+      "schedule": "0 * * * *" 
+      
+    }
+  ]
+}

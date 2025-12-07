@@ -20,7 +20,7 @@
                 Cash Balance: <br />
                 <span class="text-xl font-bold">
                     <span class="text-xl font-bold">
-                        {{ currency_symbol }}{{ wallet.balance|default:0|floatformat:2 }}
+                        {{ currency_symbol }}{{ wallet_balance|default:0|floatformat:2 }}
                     </span>
                 </span>
             </div>
@@ -42,7 +42,7 @@
                     </span>
                 </span>
             </div>
-            <div class="flex-col text-center p-3 w-2/5 rounded-xl bg-gradient-to-br 
+            <div id="pnl" class="flex-col text-center p-3 w-2/5 rounded-xl bg-gradient-to-br 
                 {% if total_profit_loss >= 0 %}from-green-500 to-emerald-600{% else %}from-red-500 to-rose-600{% endif %}">
                 Total P&L: <br />
                 <span class="text-lg font-semibold">
@@ -89,6 +89,9 @@
         </a>
     </div>
 
+    <div class="py-4">
+    {% include 'partials/number_carousel.html'%}
+    </div>
     <!-- My Investments -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6 w-full">
         {% for asset in market_assets %}
