@@ -5,11 +5,5 @@
       "src": "manage.py",
       "use": "@vercel/python"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/update-prices/?",
-      "dest": "manage.py"
-    }
   ]
 }
