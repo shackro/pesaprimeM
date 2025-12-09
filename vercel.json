@@ -11,12 +11,5 @@
       "src": "/api/update-prices/?",
       "dest": "manage.py"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/update-prices/",
-      "schedule": "0 * * * *" 
-      
-    }
   ]
 }
